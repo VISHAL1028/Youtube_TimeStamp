@@ -1,21 +1,62 @@
-console.log("✅ YouTube Timestamp Notes: content.js loaded");
+console.log("YT Notes content script loaded");
 
 chrome.runtime.onMessage.addListener((req, sender, sendResponse) => {
   const video = document.querySelector("video");
 
+  // 🔴 ALWAYS respond
   if (!video) {
-    console.log("❌ No video element found");
-    return;
+    sendResponse(null);
+    return true;
   }
 
   if (req.type === "GET_TIME") {
-    console.log("⏱ Sending current time:", video.currentTime);
     sendResponse({ time: Math.floor(video.currentTime) });
-    return true; // IMPORTANT
+    return true; // 🔥 REQUIRED
   }
 
   if (req.type === "SEEK") {
-    console.log("⏩ Seeking to:", req.time);
     video.currentTime = req.time;
+    sendResponse(true);
+    return true;
   }
 });
+
+/* ===============================
+   Floating panel (UI only)
+================================ */
+const panel = document.createElement("div");
+panel.id = "yt-note-panel";
+panel.innerHTML = `
+  <textarea placeholder="Quick note..."></textarea>
+  <button>Save</button>
+`;
+document.body.appendChild(panel);
+
+const style = document.createElement("style");
+style.innerHTML = `
+#yt-note-panel {
+  position: fixed;
+  top: 120px;
+  right: 20px;
+  width: 220px;
+  background: #111827;
+  color: white;
+  padding: 10px;
+  border-radius: 12px;
+  z-index: 9999;
+}
+#yt-note-panel textarea {
+  width: 100%;
+  height: 60px;
+  margin-bottom: 6px;
+}
+#yt-note-panel button {
+  width: 100%;
+  background: #6366f1;
+  color: white;
+  border: none;
+  padding: 6px;
+  cursor: pointer;
+}
+`;
+document.head.appendChild(style);
